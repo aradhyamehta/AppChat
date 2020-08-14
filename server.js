@@ -1,13 +1,8 @@
-const MongoClient = require('mongodb').MongoClient;
+const persist = require('mongodb').MongoClient;
 const io = require('socket.io').listen(4000).sockets;
-const assert = require('assert');
-const { send } = require('process');
-
-//Connection URL
-const url = 'mongodb://localhost:27017';
 
 //connect to DB
-MongoClient.connect(url, { useNewUrlParser:  true, useUnifiedTopology: true }, function(err, client){
+persist.connect('mongodb://127.0.0.1/AppChat', { useNewUrlParser:  true, useUnifiedTopology: true }, function(err, db){
     if(err) {
         throw err;
     }
@@ -15,7 +10,11 @@ MongoClient.connect(url, { useNewUrlParser:  true, useUnifiedTopology: true }, f
     console.log('The database connected*');
 
     io.on('connection', function(socket){
-        let chat = client.collection('chats');
+        let chat = db.collection('chats').findOne({}, function(findErr, result){
+            if(findErr) {
+                throw findErr;
+            }
+        });
 
         //send status
         sendStatus = function(s) {
